@@ -12,7 +12,7 @@ export async function POST(req: Request) {
 
     // Inject prior conversation history
     for (const msg of (history || [])) {
-      const role = msg.role === 'bot' ? 'model' : 'user';
+      const role = msg.role === 'model' ? 'model' : 'user';
       contents.push({ role, parts: [{ text: msg.text }] });
     }
 
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     contents.push({ role: 'user', parts: [{ text: message }] });
 
     const body = {
-      system_instruction: {
+      systemInstruction: {
         parts: [{
           text: "You are WatchBot, the AI assistant of WatchEX — a cinematic streaming platform. Help users discover movies and TV shows with enthusiasm, suggest genres, give ratings context, and answer anything related to cinema and television. Be concise and friendly. Format lists in markdown. Do not answer questions unrelated to movies, TV, or streaming."
         }]
@@ -32,9 +32,9 @@ export async function POST(req: Request) {
       }
     };
 
-    // Use gemini-2.0-flash via the v1 stable API
+    // Use gemini-2.5-flash via the v1beta API to support systemInstruction
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

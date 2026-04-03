@@ -2,10 +2,12 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { getImageUrl } from '@/lib/tmdb'
+import { getImageUrl } from '@/lib/tmdb-utils'
+
+export const dynamic = 'force-dynamic';
 
 export default async function HistoryView() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {

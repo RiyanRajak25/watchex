@@ -10,7 +10,7 @@ type Message = { role: 'user' | 'bot'; text: string }
 export default function WatchBot() {
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'bot', text: '👋 Welcome to **WatchEX**! I\'m **WatchBot**, powered by Gemini.\n\nWhat are you in the mood to watch tonight?' }
+    { role: 'bot', text: '👋 Welcome to **WatchEX**! I\'m **RiyanBot**, powered by **YellowOrbs**.\n\nWhat are you in the mood to watch tonight?' }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -43,7 +43,7 @@ export default function WatchBot() {
       if (res.ok && data.text) {
         setMessages(prev => [...prev, { role: 'bot', text: data.text }])
       } else {
-        throw new Error(data.error || 'WatchBot error.')
+        throw new Error(data.error || 'RiyanBot error.')
       }
     } catch (err: any) {
       setMessages(prev => [...prev, { role: 'bot', text: `Sorry, something went wrong. Please try again!` }])
@@ -56,7 +56,7 @@ export default function WatchBot() {
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
         <button
-          aria-label="Open WatchBot"
+          aria-label="Open RiyanBot"
           className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-primary to-accent rounded-full shadow-[0_0_24px_rgba(232,28,255,0.5)] flex items-center justify-center z-50 hover:scale-110 active:scale-95 transition-transform"
         >
           {open ? (
@@ -77,11 +77,11 @@ export default function WatchBot() {
           {/* Header */}
           <div className="p-4 border-b border-white/10 bg-gradient-to-r from-primary/20 to-accent/10 flex items-center gap-3 shrink-0">
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
-              <span className="text-white text-xs font-black">WB</span>
+              <span className="text-white text-xs font-black">RB</span>
             </div>
             <div>
-              <p className="font-bold text-white leading-tight">WatchBot</p>
-              <p className="text-[10px] text-gray-400 uppercase tracking-[0.2em]">Powered by Gemini</p>
+              <p className="font-bold text-white leading-tight">RiyanBot</p>
+              <p className="text-[10px] text-gray-400 uppercase tracking-[0.2em]">Powered by YellowOrbs</p>
             </div>
           </div>
 

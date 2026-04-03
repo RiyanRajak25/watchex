@@ -8,11 +8,11 @@ export async function GET(req: Request) {
 
   if (!media_id || !media_type) return NextResponse.json({ error: 'Missing params' }, { status: 400 })
 
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data, error } = await supabase
     .from('comments')
-    .select('*, profiles(username, avatar_url)')
-    .eq('media_id', media_id)
+    .select('*, profiles(username, avatar_url), comment_likes(user_id)')
+    .eq('media_id', Number(media_id))
     .eq('media_type', media_type)
     .order('created_at', { ascending: false })
 
@@ -21,7 +21,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     .from('comments')
     .insert({
       user_id: user.id,
-      media_id,
+      media_id: Number(media_id),
       media_type,
       content,
       parent_id: parent_id || null

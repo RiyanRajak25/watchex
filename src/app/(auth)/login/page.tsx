@@ -2,8 +2,10 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import AuthForm from "./AuthForm";
 
+export const dynamic = 'force-dynamic';
+
 export default async function LoginPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { session } } = await supabase.auth.getSession();
 
   if (session) {

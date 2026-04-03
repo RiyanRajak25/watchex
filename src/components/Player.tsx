@@ -26,6 +26,20 @@ const SOURCES = [
       p.type === 'movie'
         ? `https://autoembed.co/movie/tmdb/${p.tmdbId}`
         : `https://autoembed.co/tv/tmdb/${p.tmdbId}-${s}-${e}`
+  },
+  {
+    name: 'Server 3 (VidSrc.net)',
+    getUrl: (p: PlayerProps, s: number, e: number) =>
+      p.type === 'movie'
+        ? `https://vidsrc.net/embed/movie?tmdb=${p.tmdbId}`
+        : `https://vidsrc.net/embed/tv?tmdb=${p.tmdbId}&season=${s}&episode=${e}`
+  },
+  {
+    name: 'Server 4 (VidSrc)',
+    getUrl: (p: PlayerProps, s: number, e: number) =>
+      p.type === 'movie'
+        ? `https://vsrc.su/embed/movie?tmdb=${p.tmdbId}`
+        : `https://vsrc.su/embed/tv?tmdb=${p.tmdbId}&season=${s}&episode=${e}`
   }
 ]
 

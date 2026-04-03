@@ -3,6 +3,7 @@ import { Playfair_Display, Barlow_Condensed, DM_Sans } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import WatchBot from "@/components/WatchBot";
+import { TooltipProvider } from '@radix-ui/react-tooltip';
 import "./globals.css";
 
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
@@ -12,6 +13,9 @@ const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm" });
 export const metadata: Metadata = {
   title: "WatchEX | Stream Anything",
   description: "Next-generation Cinematic streaming platform powered by TMDB.",
+  icons: {
+    icon: '/logo.png',
+  },
 };
 
 export default function RootLayout({
@@ -23,9 +27,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${playfair.variable} ${barlow.variable} ${dmSans.variable} font-sans antialiased bg-background text-foreground`}>
         <NuqsAdapter>
-          <Navbar />
-          {children}
-          <WatchBot />
+          <TooltipProvider delayDuration={400}>
+            <Navbar />
+            {children}
+            <WatchBot />
+          </TooltipProvider>
         </NuqsAdapter>
       </body>
     </html>
