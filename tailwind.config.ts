@@ -9,19 +9,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#0a0a0a",
+        background: "#050505",
         foreground: "#ededed",
         primary: {
-          DEFAULT: "#e81cff",
-          hover: "#c012d6"
+          DEFAULT: "#00E5FF", // Cinematic Teal
+          hover: "#00c4db"
         },
         accent: {
-          DEFAULT: "#ffb400",
-          hover: "#e09f00"
+          DEFAULT: "#FF5A00", // Cinematic Orange
+          hover: "#e04e00"
         },
         surface: {
-          light: "#1a1a1a",
-          DEFAULT: "#121212",
+          light: "#1a1a24",
+          DEFAULT: "#0f0f13",
           dark: "#050505"
         }
       },

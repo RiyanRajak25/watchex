@@ -1,6 +1,7 @@
 import { getDetails } from '@/lib/tmdb';
 import { getImageUrl } from '@/lib/tmdb-utils';
 import Image from 'next/image';
+import Link from 'next/link';
 import Player from '@/components/Player';
 import MediaCarousel from '@/components/MediaCarousel';
 import WatchlistButton from '@/components/WatchlistButton';
@@ -8,6 +9,9 @@ import Comments from '@/components/Comments';
 import CastCarousel from '@/components/CastCarousel';
 import TrailerButton from '@/components/TrailerButton';
 import StarRating from '@/components/StarRating';
+import { createClient } from '@supabase/supabase-js';
+import { MovieSchema } from '@/components/seo/MovieSchema';
+import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,9 +19,24 @@ export default async function MovieDetails({ params }: { params: { id: string } 
   const media = await getDetails('movie', params.id);
   const title = media.title || media.name;
   const year = (media.release_date || '').split('-')[0];
+
+  // Fetch pSEO articles for this movie
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
+  const { data: generatedArticles } = await supabase
+    .from('generated_articles')
+    .select('title, article_slug')
+    .eq('movie_id', parseInt(params.id, 10))
+    .eq('media_type', 'movie');
   
   return (
     <main className="min-h-screen bg-background pb-20">
+      {/* JSON-LD Structured Data */}
+      <MovieSchema movie={media} mediaType="movie" />
+      <BreadcrumbSchema items={[
+        { name: 'Home', href: '/' },
+        { name: 'Movies', href: '/discover' },
+        { name: title, href: `/movie/${params.id}` },
+      ]} />
       {/* Backdrop */}
       <div className="w-full h-[40vh] md:h-[60vh] relative">
         {media.backdrop_path && <Image src={getImageUrl(media.backdrop_path, 'original')!} fill alt="Backdrop" className="object-cover opacity-30" priority />}
@@ -67,6 +86,41 @@ export default async function MovieDetails({ params }: { params: { id: string } 
         {/* Recommendations */}
         <div className="mt-12 -mx-4 md:mx-0">
           <MediaCarousel title="You Might Also Like" items={media.recommendations?.results || []} />
+        </div>
+
+        {/* pSEO Internal Linking Mesh */}
+        <div className="mt-12 flex flex-col gap-6">
+          {/* Movies Like CTA */}
+          <Link 
+            href={`/movies-like/${params.id}`}
+            className="group flex items-center justify-between p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-accent/30 hover:bg-accent/5 transition-all duration-300"
+          >
+            <div>
+              <h3 className="text-xl font-heading font-bold text-white group-hover:text-accent transition-colors">Movies Like {title}</h3>
+              <p className="text-sm text-gray-400 mt-1">Discover similar films that share the DNA of {title}</p>
+            </div>
+            <span className="text-accent text-2xl group-hover:translate-x-1 transition-transform">→</span>
+          </Link>
+
+          {/* Generated Article Links */}
+          {generatedArticles && generatedArticles.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {generatedArticles.map((article) => (
+                <Link 
+                  key={article.article_slug}
+                  href={`/movie/${params.id}/${article.article_slug}`}
+                  className="group p-5 bg-white/5 border border-white/10 rounded-2xl hover:border-accent/30 hover:bg-accent/5 transition-all duration-300"
+                >
+                  <div className="text-xs text-accent uppercase font-semibold tracking-wider mb-2">
+                    {article.article_slug.replace(/-/g, ' ')}
+                  </div>
+                  <h4 className="text-white font-heading font-bold group-hover:text-accent transition-colors line-clamp-2">
+                    {article.title}
+                  </h4>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Discussion */}

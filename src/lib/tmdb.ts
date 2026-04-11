@@ -1,6 +1,6 @@
 import 'server-only';
 
-const TMDB_ACCESS_TOKEN = process.env.TMDB_ACCESS_TOKEN;
+const TMDB_ACCESS_TOKEN = process.env.TMDB_ACCESS_TOKEN || process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN;
 const BASE_URL = 'https://api.themoviedb.org/3';
 
 export const fetchTMDB = async (endpoint: string, params: Record<string, string> = {}) => {

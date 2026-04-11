@@ -12,34 +12,38 @@ interface PlayerProps {
   mediaDetails?: any
 }
 
-const SOURCES = [
+const SOURCES: { name: string; target?: 'both' | 'movie' | 'tv'; getUrl: (p: PlayerProps, s: number, e: number) => string }[] = [
   {
-    name: 'Server 1 (VidKing)',
+    name: 'Best(try VIP 1)',
+    target: 'both',
+    getUrl: (p: PlayerProps, s: number, e: number) =>
+      p.type === 'movie'
+        ? `https://www.2embed.cc/embed/${p.tmdbId}`
+        : `https://www.2embed.cc/embedtv/${p.tmdbId}&s=${s}&e=${e}`
+  },
+  {
+    name: 'Upcloud 1',
+    target: 'both',
+    getUrl: (p: PlayerProps, s: number, e: number) =>
+      p.type === 'movie'
+        ? `https://vidsrc.cc/v2/embed/movie/${p.tmdbId}?autoPlay=false`
+        : `https://vidsrc.cc/v2/embed/tv/${p.tmdbId}/${s}/${e}?autoPlay=false`
+  },
+  {
+    name: 'Upcloud 2',
+    target: 'both',
+    getUrl: (p: PlayerProps, s: number, e: number) =>
+      p.type === 'movie'
+        ? `https://vidsrc.cc/v3/embed/movie/${p.tmdbId}?autoPlay=false`
+        : `https://vidsrc.cc/v3/embed/tv/${p.tmdbId}/${s}/${e}?autoPlay=false`
+  },
+  {
+    name: 'vidking',
+    target: 'both',
     getUrl: (p: PlayerProps, s: number, e: number) =>
       p.type === 'movie'
         ? `https://www.vidking.net/embed/movie/${p.tmdbId}?color=e81cff`
         : `https://www.vidking.net/embed/tv/${p.tmdbId}/${s}/${e}?color=e81cff&episodeSelector=true&nextEpisode=true`
-  },
-  {
-    name: 'Server 2 (AutoEmbed)',
-    getUrl: (p: PlayerProps, s: number, e: number) =>
-      p.type === 'movie'
-        ? `https://autoembed.co/movie/tmdb/${p.tmdbId}`
-        : `https://autoembed.co/tv/tmdb/${p.tmdbId}-${s}-${e}`
-  },
-  {
-    name: 'Server 3 (VidSrc.net)',
-    getUrl: (p: PlayerProps, s: number, e: number) =>
-      p.type === 'movie'
-        ? `https://vidsrc.net/embed/movie?tmdb=${p.tmdbId}`
-        : `https://vidsrc.net/embed/tv?tmdb=${p.tmdbId}&season=${s}&episode=${e}`
-  },
-  {
-    name: 'Server 4 (VidSrc)',
-    getUrl: (p: PlayerProps, s: number, e: number) =>
-      p.type === 'movie'
-        ? `https://vsrc.su/embed/movie?tmdb=${p.tmdbId}`
-        : `https://vsrc.su/embed/tv?tmdb=${p.tmdbId}&season=${s}&episode=${e}`
   }
 ]
 
@@ -102,6 +106,8 @@ export default function Player(props: PlayerProps) {
   const [currentSeason, setCurrentSeason] = useState(props.season || 1)
   const [currentEpisode, setCurrentEpisode] = useState(props.episode || 1)
 
+  const availableSources = SOURCES.filter(s => !s.target || s.target === 'both' || s.target === props.type)
+
   const seasons = (props.mediaDetails?.seasons || []).filter((s: any) => s.season_number > 0)
   const selectedSeasonData = seasons.find((s: any) => s.season_number === currentSeason)
   const maxEpisodes = selectedSeasonData?.episode_count || 30
@@ -154,7 +160,7 @@ export default function Player(props: PlayerProps) {
         <div className="flex flex-col md:flex-row gap-3 md:items-center justify-between">
           {/* Server tabs */}
           <div className="flex gap-2 flex-wrap">
-            {SOURCES.map((server, idx) => (
+            {availableSources.map((server, idx) => (
               <Tooltip.Root key={server.name}>
                 <Tooltip.Trigger asChild>
                   <button
@@ -205,13 +211,21 @@ export default function Player(props: PlayerProps) {
 
         {/* Player iframe */}
         <div className="w-full aspect-video bg-black rounded-xl overflow-hidden border border-white/10 shadow-2xl relative">
-          <iframe
+            <iframe
             key={`${activeServer}-${currentSeason}-${currentEpisode}`}
-            src={SOURCES[activeServer].getUrl(props, currentSeason, currentEpisode)}
+            src={availableSources[activeServer]?.getUrl(props, currentSeason, currentEpisode) || ''}
             allowFullScreen
             allow="autoplay; fullscreen"
+            sandbox="allow-scripts allow-same-origin"
             className="absolute inset-0 w-full h-full border-0"
           />
+        </div>
+
+        {/* VIP 1 Recommendation Label */}
+        <div className="w-full text-center mt-1">
+          <p className="text-red-500 font-bold text-sm md:text-base tracking-widest">
+            USE VIP 1 FOR BEST EXPERIENCE !!
+          </p>
         </div>
       </div>
     </Tooltip.Provider>

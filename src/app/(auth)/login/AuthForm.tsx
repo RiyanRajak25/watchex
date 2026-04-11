@@ -1,60 +1,28 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
+import { Turnstile } from '@marsidev/react-turnstile'
 
-declare global {
-  interface Window {
-    grecaptcha: any
-  }
-}
-
-const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ''
+const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''
 
 export default function AuthForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [recaptchaReady, setRecaptchaReady] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
 
   const router = useRouter()
   const supabase = createClient()
 
-  // Load reCAPTCHA v3 script once
-  useEffect(() => {
-    if (!SITE_KEY) { setRecaptchaReady(true); return } // skip if no key (dev)
-    const existing = document.querySelector('#recaptcha-script')
-    if (existing) { setRecaptchaReady(true); return }
-
-    const script = document.createElement('script')
-    script.id = 'recaptcha-script'
-    script.src = `https://www.google.com/recaptcha/api.js?render=${SITE_KEY}`
-    script.async = true
-    script.onload = () => setRecaptchaReady(true)
-    document.head.appendChild(script)
-  }, [])
-
-  // Execute reCAPTCHA and get token
-  const getRecaptchaToken = useCallback((action: string): Promise<string> => {
-    return new Promise((resolve) => {
-      if (!SITE_KEY || !window.grecaptcha) {
-        resolve('') // dev bypass
-        return
-      }
-      window.grecaptcha.ready(() => {
-        window.grecaptcha.execute(SITE_KEY, { action }).then((token: string) => {
-          resolve(token)
-        })
-      })
-    })
-  }, [])
-
   // Verify token on server
-  const verifyRecaptcha = async (token: string): Promise<boolean> => {
-    if (!token) return true // dev bypass when no site key
-    const res = await fetch('/api/recaptcha', {
+  const verifyTurnstile = async (token: string | null): Promise<boolean> => {
+    if (!SITE_KEY) return true // dev bypass when no site key
+    if (!token) return false
+
+    const res = await fetch('/api/turnstile', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token }),
@@ -66,13 +34,13 @@ export default function AuthForm() {
   const handleEmailAuth = async (isSignUp: boolean, e: React.MouseEvent) => {
     e.preventDefault()
     if (!email || !password) { setError('Please fill in all fields.'); return }
+    if (!turnstileToken && SITE_KEY) { setError('Security check pending or failed. Please refresh or try again.'); return }
+    
     setLoading(true)
     setError(null)
 
     try {
-      // reCAPTCHA v3 — programmatic invoke per docs
-      const token = await getRecaptchaToken(isSignUp ? 'register' : 'login')
-      const passed = await verifyRecaptcha(token)
+      const passed = await verifyTurnstile(turnstileToken)
       if (!passed) { setError('Security check failed. Please try again.'); setLoading(false); return }
 
       if (isSignUp) {
@@ -143,18 +111,27 @@ export default function AuthForm() {
 
       {error && <p className="text-red-400 text-center text-xs">{error}</p>}
 
-      {/* reCAPTCHA v3 badge is auto-shown bottom-right; no UI widget needed */}
+      {SITE_KEY && (
+        <div className="flex justify-center my-2">
+          <Turnstile 
+            siteKey={SITE_KEY} 
+            onSuccess={(token) => setTurnstileToken(token)}
+            options={{ theme: 'dark' }}
+          />
+        </div>
+      )}
+
       <p className="text-[10px] text-gray-600 text-center px-2">
-        Protected by reCAPTCHA v3 &mdash;{' '}
-        <a href="https://policies.google.com/privacy" className="underline hover:text-gray-400" target="_blank" rel="noreferrer">Privacy</a> &amp;{' '}
-        <a href="https://policies.google.com/terms" className="underline hover:text-gray-400" target="_blank" rel="noreferrer">Terms</a>
+        Protected by Cloudflare Turnstile &mdash;{' '}
+        <a href="https://www.cloudflare.com/privacypolicy/" className="underline hover:text-gray-400" target="_blank" rel="noreferrer">Privacy</a> &amp;{' '}
+        <a href="https://www.cloudflare.com/terms/" className="underline hover:text-gray-400" target="_blank" rel="noreferrer">Terms</a>
       </p>
 
       <div className="flex gap-2">
         <button
           type="submit"
           onClick={(e) => handleEmailAuth(false, e)}
-          disabled={loading}
+          disabled={loading || (!turnstileToken && !!SITE_KEY)}
           className="flex-1 px-4 py-3 bg-primary hover:bg-primary-hover text-white rounded-lg font-medium transition-colors disabled:opacity-50"
         >
           {loading ? 'Processing...' : 'Sign In'}
@@ -162,7 +139,7 @@ export default function AuthForm() {
         <button
           type="button"
           onClick={(e) => handleEmailAuth(true, e)}
-          disabled={loading}
+          disabled={loading || (!turnstileToken && !!SITE_KEY)}
           className="flex-1 px-4 py-3 border border-white/20 hover:bg-white/10 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
         >
           Register

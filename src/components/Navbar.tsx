@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
@@ -8,6 +7,8 @@ import type { User } from '@supabase/supabase-js'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import * as Tooltip from '@radix-ui/react-tooltip'
 import GlobalSearch from './GlobalSearch'
+import { TransitionLink } from '@/components/TransitionLink'
+import { MenuOverlay } from '@/components/MenuOverlay'
 
 const NAV_LINKS = [
   { href: '/',           label: 'Home',      icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
@@ -24,6 +25,8 @@ export default function Navbar() {
   const router = useRouter()
   const pathname = usePathname()
 
+  const [isVisible, setIsVisible] = useState(true)
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     setMobileOpen(false)
@@ -39,7 +42,18 @@ export default function Navbar() {
   }, [])
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 20)
+    let lastScrollY = window.scrollY
+    const handler = () => {
+      const currentScrollY = window.scrollY
+      setScrolled(currentScrollY > 20)
+      
+      if (currentScrollY > 100 && currentScrollY > lastScrollY) {
+        setIsVisible(false) // Scrolling down
+      } else {
+        setIsVisible(true)  // Scrolling up
+      }
+      lastScrollY = currentScrollY
+    }
     window.addEventListener('scroll', handler, { passive: true })
     return () => window.removeEventListener('scroll', handler)
   }, [])
@@ -52,22 +66,20 @@ export default function Navbar() {
 
   return (
     <>
-      <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'glass shadow-xl shadow-black/30' : 'bg-gradient-to-b from-black/60 to-transparent backdrop-blur-none border-b-0'}`}>
-        <div className="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between gap-4">
+      <header className={`fixed top-0 w-full z-50 transition-all duration-500 ease-in-out ${isVisible ? 'translate-y-0' : '-translate-y-full'} ${scrolled ? 'pt-2 pb-2' : 'pt-4 pb-0'}`}>
+        <div className={`max-w-7xl mx-auto h-16 flex items-center justify-between gap-4 transition-all duration-500 ${scrolled ? 'px-6 rounded-2xl glass shadow-[0_10px_30px_rgba(0,0,0,0.8)] border border-white/5 mx-4 md:mx-auto' : 'px-4 md:px-8'}`}>
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
-            <img src="/logo.png" alt="WatchEX Logo" className="h-9 w-auto object-contain hover:scale-105 transition-transform drop-shadow-[0_0_10px_rgba(232,28,255,0.5)]" />
-            <span className="hidden sm:inline-block font-heading text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              WatchEX
-            </span>
-          </Link>
+          <TransitionLink href="/" className="flex items-center gap-2 group flex-shrink-0">
+            {/* Swapped out legacy mark for wide textual cinematic logo, scaled up heavily against native transparent padding */}
+            <img src="/logo.png" alt="WatchEX Logo" className="h-12 md:h-16 w-auto object-contain scale-110 origin-left hover:scale-125 transition-transform drop-shadow-[0_0_15px_rgba(0,229,255,0.4)]" />
+          </TransitionLink>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex gap-1 font-medium text-sm">
+          <nav className="hidden md:flex gap-1 font-medium text-sm pointer-events-auto">
             {NAV_LINKS.map(link => {
               const active = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href))
               return (
-                <Link
+                <TransitionLink
                   key={link.href}
                   href={link.href}
                   className={`px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 ${active ? 'text-primary bg-primary/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
@@ -75,7 +87,7 @@ export default function Navbar() {
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d={link.icon}/></svg>
                   {link.label}
                   {active && <span className="w-1 h-1 rounded-full bg-primary" />}
-                </Link>
+                </TransitionLink>
               )
             })}
           </nav>
@@ -112,31 +124,31 @@ export default function Navbar() {
                     </div>
 
                     <DropdownMenu.Item asChild>
-                      <Link href="/dashboard" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/10 outline-none transition-all cursor-pointer">
+                      <TransitionLink href="/dashboard" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/10 outline-none transition-all cursor-pointer">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                         Dashboard
-                      </Link>
+                      </TransitionLink>
                     </DropdownMenu.Item>
 
                     <DropdownMenu.Item asChild>
-                      <Link href="/watchlists" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/10 outline-none transition-all cursor-pointer">
+                      <TransitionLink href="/watchlists" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/10 outline-none transition-all cursor-pointer">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M5 5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16l-7-3.5L5 21V5z"/></svg>
                         Watchlists
-                      </Link>
+                      </TransitionLink>
                     </DropdownMenu.Item>
 
                     <DropdownMenu.Item asChild>
-                      <Link href="/history" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/10 outline-none transition-all cursor-pointer">
+                      <TransitionLink href="/history" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/10 outline-none transition-all cursor-pointer">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                         Watch History
-                      </Link>
+                      </TransitionLink>
                     </DropdownMenu.Item>
 
                     <DropdownMenu.Separator className="h-px bg-white/5 my-1.5" />
 
                     <DropdownMenu.Item 
                       onSelect={handleLogout}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 outline-none transition-all cursor-pointer"
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 outline-none transition-all cursor-pointer pointer-events-auto"
                     >
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                       Sign Out
@@ -145,49 +157,24 @@ export default function Navbar() {
                 </DropdownMenu.Portal>
               </DropdownMenu.Root>
             ) : (
-              <Link href="/login" className="hidden md:flex px-4 py-2 bg-primary/20 text-primary border border-primary/40 hover:bg-primary/40 rounded-full text-sm font-semibold transition-all hover:scale-105">
+              <TransitionLink href="/login" className="hidden md:flex px-4 py-2 bg-primary/20 text-primary border border-primary/40 hover:bg-primary/40 rounded-full text-sm font-semibold transition-all hover:scale-105 pointer-events-auto">
                 Sign In
-              </Link>
+              </TransitionLink>
             )}
 
-            {/* Mobile hamburger */}
-            <button className="md:hidden w-9 h-9 flex items-center justify-center text-gray-300 hover:text-white transition-colors rounded-lg hover:bg-white/5" onClick={() => setMobileOpen(o => !o)}>
-              {mobileOpen ? 
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> : 
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
-              }
+            {/* Cinematic Menu Morphing Hamburger */}
+            <button 
+              className="w-9 h-9 flex items-center justify-center text-gray-300 hover:text-white transition-colors rounded-lg hover:bg-white/5 pointer-events-auto" 
+              onClick={() => setMobileOpen(true)}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Mobile drawer */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-40 md:hidden">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <div className="absolute top-16 left-0 right-0 bg-[#111] border-b border-white/10 p-4 flex flex-col gap-1 shadow-2xl animate-fade-up">
-            {NAV_LINKS.map(link => {
-              const active = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href))
-              return (
-                <Link key={link.href} href={link.href} className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${active ? 'bg-primary/10 text-primary border border-primary/20' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 flex-shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d={link.icon}/></svg>
-                  {link.label}
-                </Link>
-              )
-            })}
-            <div className="border-t border-white/5 mt-2 pt-2">
-              {user ? (
-                <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                  Sign Out
-                </button>
-              ) : (
-                <Link href="/login" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-primary hover:bg-primary/10 transition-colors">Sign In</Link>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* GSAP Native Liquid SVG Path Context Render */}
+      <MenuOverlay isOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
     </>
   )
 }

@@ -12,7 +12,21 @@ export default async function Home() {
     getTopRated('movie')
   ]);
 
-  const heroItems = trendingAll?.results?.slice(0, 5) || []
+  const rawHeroItems = trendingAll?.results?.slice(0, 5) || [];
+  
+  // Fetch full details for the hero items to get their background video trailers
+  const heroItems = await Promise.all(
+    rawHeroItems.map(async (item: any) => {
+      const type = item.media_type === 'tv' ? 'tv' : 'movie';
+      try {
+        const { getDetails } = await import('@/lib/tmdb');
+        const details = await getDetails(type, item.id);
+        return { ...item, videos: details?.videos };
+      } catch {
+        return item;
+      }
+    })
+  );
 
   return (
     <main className="min-h-screen flex flex-col bg-background pb-20">
