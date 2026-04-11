@@ -32,9 +32,9 @@ export async function POST(req: Request) {
       }
     };
 
-    // Use gemini-2.5-flash via the v1beta API to support systemInstruction
+    // Use gemini-flash-latest via the v1beta API to support systemInstruction without quota locks
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
