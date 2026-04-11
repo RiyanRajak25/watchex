@@ -49,8 +49,8 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-// Changed to gemini-1.5-flash: Free tier is 1,500 requests per day (as opposed to 20 for 2.5-flash)
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash', generationConfig: { responseMimeType: "application/json" } });
+// Google API completely removed/deprecated 1.5-flash for new keys. gemini-2.0-flash is the standard high-quota model now.
+const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash', generationConfig: { responseMimeType: "application/json" } });
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
