@@ -254,43 +254,71 @@ export default async function handler(req: Request, context: Context) {
           }
           `;
 
-          try {
-            const result = await model.generateContent(prompt);
-            let responseText = result.response.text();
+          let retries = 0;
+          const maxRetries = 3;
+          let success = false;
 
-            // Strip markdown wrappers if Gemini adds them
-            if (responseText.startsWith('```json')) {
-              responseText = responseText.replace(/^```json/, '').replace(/```$/, '').trim();
-            } else if (responseText.startsWith('```')) {
-              responseText = responseText.replace(/^```/, '').replace(/```$/, '').trim();
-            }
+          while (retries < maxRetries && !success) {
+            try {
+              const result = await model.generateContent(prompt);
+              let responseText = result.response.text();
 
-            const parsed = JSON.parse(responseText);
-
-            if (parsed.title && parsed.content) {
-              const { error: insertError } = await supabase.from('generated_articles').insert({
-                movie_id: mediaId,
-                media_type: mediaType,
-                article_slug: target.slug,
-                title: parsed.title,
-                content: parsed.content,
-              });
-
-              if (insertError) {
-                console.error(`[pSEO] DB insert failed for ${title} - ${target.slug}:`, insertError.message);
-              } else {
-                processedCount++;
-                console.log(`[pSEO] ✅ Inserted ${target.slug} for ${title}`);
+              // Strip markdown wrappers if Gemini adds them
+              if (responseText.startsWith('```json')) {
+                responseText = responseText.replace(/^```json/, '').replace(/```$/, '').trim();
+              } else if (responseText.startsWith('```')) {
+                responseText = responseText.replace(/^```/, '').replace(/```$/, '').trim();
               }
-            } else {
-              console.warn(`[pSEO] LLM returned empty title/content for ${title} - ${target.slug}`);
-            }
 
-            // Throttle: 4.5s between calls to respect Gemini free tier (15 RPM)
-            await delay(4500);
-          } catch (err: any) {
-            console.error(`[pSEO] ❌ LLM failed for ${title} - ${target.slug}: ${err.message || err}`);
-            await delay(10000);
+              const parsed = JSON.parse(responseText);
+
+              if (parsed.title && parsed.content) {
+                const { error: insertError } = await supabase.from('generated_articles').insert({
+                  movie_id: mediaId,
+                  media_type: mediaType,
+                  article_slug: target.slug,
+                  title: parsed.title,
+                  content: parsed.content,
+                });
+
+                if (insertError) {
+                  console.error(`[pSEO] DB insert failed for ${title} - ${target.slug}:`, insertError.message);
+                } else {
+                  processedCount++;
+                  console.log(`[pSEO] ✅ Inserted ${target.slug} for ${title}`);
+                }
+              } else {
+                console.warn(`[pSEO] LLM returned empty title/content for ${title} - ${target.slug}`);
+              }
+
+              success = true;
+              // Throttle to 6s between successful calls to stay safely under 15 RPM limits
+              await delay(6000);
+            } catch (err: any) {
+              const errorMessage = err.message || err.toString();
+              console.error(`[pSEO] ❌ LLM failed for ${title} - ${target.slug} (Attempt ${retries + 1}): ${errorMessage}`);
+              
+              retries++;
+              if (retries >= maxRetries) {
+                console.error(`[pSEO] 🚨 Max retries reached for ${target.slug}. Skipping.`);
+                await delay(5000);
+                break;
+              }
+
+              // Parse "Please retry in X.XXs"
+              const match = errorMessage.match(/Please retry in (\d+(?:\.\d+)?)s/);
+              if (match) {
+                const waitTimeMs = Math.ceil(parseFloat(match[1])) * 1000 + 2000; // Add 2 seconds padding
+                console.log(`[pSEO] ⏳ Rate limited. Waiting for ${waitTimeMs}ms before retrying...`);
+                await delay(waitTimeMs);
+              } else if (errorMessage.includes('429') || errorMessage.includes('Quota')) {
+                console.log(`[pSEO] ⏳ Rate limited (no parsed time). Waiting for 35000ms...`);
+                await delay(35000);
+              } else {
+                // For other errors, wait a generic amount
+                await delay(10000);
+              }
+            }
           }
         }
       } catch (itemError: any) {
