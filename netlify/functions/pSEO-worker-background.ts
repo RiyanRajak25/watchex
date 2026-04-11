@@ -49,7 +49,8 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { responseMimeType: "application/json" } });
+// Changed to gemini-1.5-flash: Free tier is 1,500 requests per day (as opposed to 20 for 2.5-flash)
+const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash', generationConfig: { responseMimeType: "application/json" } });
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -148,9 +149,10 @@ export default async function handler(req: Request, context: Context) {
       getTrending('tv', 'day')
     ]);
 
-    // Batch Size: 5 Movies and 5 TV Shows (10 total)
-    const movies = (trendingMovies.results || []).slice(0, 5).map((m: any) => ({ ...m, type: 'movie' }));
-    const tvShows = (trendingTV.results || []).slice(0, 5).map((t: any) => ({ ...t, type: 'tv' }));
+    // Batch Size: 2 Movies and 2 TV Shows (4 total * 3 articles = 12 requests per run)
+    // Running every 15 mins (96 runs/day) = 1152 requests per day (safely under 1500 RPD limit)
+    const movies = (trendingMovies.results || []).slice(0, 2).map((m: any) => ({ ...m, type: 'movie' }));
+    const tvShows = (trendingTV.results || []).slice(0, 2).map((t: any) => ({ ...t, type: 'tv' }));
     const combinedMedia = [...movies, ...tvShows];
 
     if (combinedMedia.length === 0) {
