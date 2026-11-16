@@ -13,6 +13,19 @@ export function StickyPlayer({ trailerKey, movieTitle }: StickyPlayerProps) {
   const [isSticky, setIsSticky] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false); // Only applicable when sticky
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const maxWidth = Math.max(100, windowWidth - 32); // leave 16px on left/right for small screens
+  const expandedWidth = Math.min(400, maxWidth);
+  const collapsedWidth = Math.min(280, maxWidth);
+  const expandedHeight = expandedWidth * (9/16);
+  const collapsedHeight = collapsedWidth * (9/16);
 
   useEffect(() => {
     if (!trailerKey || isDismissed) return;
@@ -52,12 +65,12 @@ export function StickyPlayer({ trailerKey, movieTitle }: StickyPlayerProps) {
               opacity: 1, 
               y: 0, 
               scale: 1,
-              width: isExpanded ? '400px' : '280px',
-              height: isExpanded ? '225px' : '158px',
+              width: isExpanded ? expandedWidth : collapsedWidth,
+              height: isExpanded ? expandedHeight : collapsedHeight,
             }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className={`fixed bottom-6 right-6 z-50 rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-black backdrop-blur-xl group hover:shadow-accent/20 transition-shadow duration-500`}
+            className={`fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-black backdrop-blur-xl group hover:shadow-accent/20 transition-shadow duration-500`}
             style={{ isolation: 'isolate' }}
           >
             {/* Header / Controls */}

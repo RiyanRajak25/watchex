@@ -74,11 +74,9 @@ function RadixSelect({
           className="z-[200] bg-[#18181b]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95"
           position="popper"
           sideOffset={6}
+          data-lenis-prevent="true"
         >
-          <Select.ScrollUpButton className="flex items-center justify-center h-6 text-gray-400">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><polyline points="18 15 12 9 6 15"/></svg>
-          </Select.ScrollUpButton>
-          <Select.Viewport className="p-1 max-h-[200px]">
+          <Select.Viewport className="p-1 max-h-[250px] overflow-y-auto custom-scrollbar">
             {items.map(item => (
               <Select.Item
                 key={item.value}
@@ -92,9 +90,6 @@ function RadixSelect({
               </Select.Item>
             ))}
           </Select.Viewport>
-          <Select.ScrollDownButton className="flex items-center justify-center h-6 text-gray-400">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><polyline points="6 9 12 15 18 9"/></svg>
-          </Select.ScrollDownButton>
         </Select.Content>
       </Select.Portal>
     </Select.Root>
@@ -152,6 +147,23 @@ export default function Player(props: PlayerProps) {
     window.addEventListener('message', handler)
     return () => window.removeEventListener('message', handler)
   }, [])
+
+  // Anti-Redirect Protection
+  // Streaming servers (vidsrc, vidking) detect standard sandboxes and block the video.
+  // They usually do this by testing if form submissions or popups are allowed.
+  // By omitting `allow-top-navigation` but allowing the rest, we trick their detection 
+  // into thinking there is no sandbox, while physically preventing them from redirecting our app.
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Backup protection in case a script manages to bypass the sandbox
+      e.preventDefault();
+      e.returnValue = 'Are you sure you want to leave? A video is currently playing.';
+      return e.returnValue;
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   return (
     <Tooltip.Provider delayDuration={300}>
@@ -216,7 +228,7 @@ export default function Player(props: PlayerProps) {
             src={availableSources[activeServer]?.getUrl(props, currentSeason, currentEpisode) || ''}
             allowFullScreen
             allow="autoplay; fullscreen"
-            sandbox="allow-scripts allow-same-origin"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-popups allow-downloads"
             className="absolute inset-0 w-full h-full border-0"
           />
         </div>

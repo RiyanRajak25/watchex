@@ -17,6 +17,11 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'nextjs.org',
         pathname: '/icons/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        pathname: '/**',
       }
     ]
   }

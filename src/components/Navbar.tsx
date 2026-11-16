@@ -66,12 +66,12 @@ export default function Navbar() {
 
   return (
     <>
-      <header className={`fixed top-0 w-full z-50 transition-all duration-500 ease-in-out ${isVisible ? 'translate-y-0' : '-translate-y-full'} ${scrolled ? 'pt-2 pb-2' : 'pt-4 pb-0'}`}>
-        <div className={`max-w-7xl mx-auto h-16 flex items-center justify-between gap-4 transition-all duration-500 ${scrolled ? 'px-6 rounded-2xl glass shadow-[0_10px_30px_rgba(0,0,0,0.8)] border border-white/5 mx-4 md:mx-auto' : 'px-4 md:px-8'}`}>
+      <header className={`fixed top-0 w-full z-50 flex justify-center transition-all duration-500 ease-in-out ${isVisible ? 'translate-y-0' : '-translate-y-full'} ${scrolled ? 'pt-4' : 'pt-6'}`}>
+        <div className={`h-14 md:h-16 flex items-center justify-between gap-4 md:gap-8 transition-all duration-500 px-4 md:px-8 rounded-full glass shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/10 ${scrolled ? 'w-[95%] max-w-5xl bg-black/60 backdrop-blur-xl' : 'w-[98%] max-w-7xl bg-black/20 backdrop-blur-md'}`}>
           {/* Logo */}
-          <TransitionLink href="/" className="flex items-center gap-2 group flex-shrink-0">
+          <TransitionLink href="/" className="flex items-center gap-2 group flex-shrink-0 ml-2">
             {/* Swapped out legacy mark for wide textual cinematic logo, scaled up heavily against native transparent padding */}
-            <img src="/logo.png" alt="WatchEX Logo" className="h-12 md:h-16 w-auto object-contain scale-110 origin-left hover:scale-125 transition-transform drop-shadow-[0_0_15px_rgba(0,229,255,0.4)]" />
+            <img src="/logo.png" alt="WatchEX Logo" className="h-8 md:h-10 w-auto object-contain scale-110 origin-left hover:scale-125 transition-transform drop-shadow-[0_0_15px_rgba(0,229,255,0.4)]" />
           </TransitionLink>
 
           {/* Desktop nav */}
@@ -164,7 +164,7 @@ export default function Navbar() {
 
             {/* Cinematic Menu Morphing Hamburger */}
             <button 
-              className="w-9 h-9 flex items-center justify-center text-gray-300 hover:text-white transition-colors rounded-lg hover:bg-white/5 pointer-events-auto" 
+              className="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-white transition-colors rounded-full hover:bg-white/10 pointer-events-auto mr-1" 
               onClick={() => setMobileOpen(true)}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/></svg>

@@ -69,7 +69,7 @@ export default async function TVLongTailArticlePage({ params }: PageProps) {
       title,
       content,
       created_at,
-      movie_cache!inner ( title, release_year, poster_path )
+      movie_cache!inner ( title, release_year, poster_path, trailer_key )
     `)
     .eq('movie_id', mediaId)
     .eq('media_type', 'tv')
@@ -127,10 +127,10 @@ export default async function TVLongTailArticlePage({ params }: PageProps) {
           <div className="inline-block px-3 py-1 bg-accent/20 border border-accent/20 rounded-full text-accent text-xs font-semibold uppercase tracking-wider mb-4">
             {params.articleSlug.replace(/-/g, ' ')}
           </div>
-          <h1 className="text-4xl md:text-6xl font-heading font-bold text-white mb-6 leading-tight">
+          <h1 className="text-3xl md:text-6xl font-heading font-bold text-white mb-6 leading-tight">
             {article.title}
           </h1>
-          <div className="flex items-center gap-4 text-gray-400 text-sm">
+          <div className="flex flex-wrap items-center gap-2 md:gap-4 text-gray-400 text-sm">
             <span>TV Show: {movieCache.title} ({movieCache.release_year})</span>
             <span>•</span>
             <span>Published: {new Date(article.created_at).toLocaleDateString()}</span>

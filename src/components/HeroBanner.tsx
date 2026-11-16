@@ -42,7 +42,7 @@ export default function HeroBanner({ items }: { items: any[] }) {
       {/* Background Media with Crossfade */}
       {items.map((item, idx) => {
         const trailer = item?.videos?.results?.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube');
-        const showVideo = idx === active && trailer && !paused;
+        const showVideo = idx === active && trailer; // removed !paused so it doesn't unmount on hover
 
         return (
           <div
@@ -53,7 +53,7 @@ export default function HeroBanner({ items }: { items: any[] }) {
               <div className="absolute inset-0 w-full h-full scale-125 md:scale-150 pointer-events-none origin-center">
                 <iframe
                   src={`https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailer.key}&modestbranding=1&rel=0&showinfo=0`}
-                  className="w-full h-[120%] -mt-[10%] object-cover opacity-60"
+                  className="w-full h-[120%] -mt-[10%] object-cover opacity-80"
                   allow="autoplay; encrypted-media"
                   allowFullScreen
                 />
@@ -76,16 +76,16 @@ export default function HeroBanner({ items }: { items: any[] }) {
       <div className="absolute inset-0 bg-gradient-to-r from-[#050505]/95 via-[#050505]/50 to-transparent z-10 pointer-events-none" />
       <div className="absolute inset-0 bg-radial-gradient from-transparent to-[#050505]/80 pointer-events-none z-10" />
 
-      {/* Content */}
-      <div className="relative z-20 px-6 md:px-16 pb-20 max-w-6xl flex flex-col gap-6 w-full animate-fade-up pointer-events-none">
+      {/* Floating Action Card Content */}
+      <div className="relative z-20 mx-4 md:mx-16 mb-16 md:mb-20 px-6 md:px-12 py-8 md:py-10 max-w-3xl flex flex-col gap-5 md:gap-6 w-full animate-fade-up pointer-events-none rounded-3xl">
         {/* Type pill */}
         <div className="flex items-center gap-3 pointer-events-auto">
-          <span className={`text-xs font-bold tracking-[0.2em] uppercase px-4 py-1.5 rounded-full border shadow-lg ${isTV ? 'text-accent border-accent/50 bg-accent/10 shadow-accent/20' : 'text-primary border-primary/50 bg-primary/10 shadow-primary/20'}`}>
+          <span className={`text-xs font-bold tracking-[0.2em] uppercase px-4 py-1.5 rounded-full border backdrop-blur-md shadow-lg ${isTV ? 'text-white border-white/20 bg-black/40' : 'text-white border-white/20 bg-black/40'}`}>
             {isTV ? '📺 TV Show' : '🎬 Movie'}
           </span>
-          {year && <span className="text-sm font-semibold text-gray-400 tracking-wider">{year}</span>}
+          {year && <span className="text-sm font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] tracking-wider">{year}</span>}
           {rating > 0 && (
-            <span className="text-sm font-black text-white flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full backdrop-blur-md border border-white/10 shadow-2xl">
+            <span className="text-sm font-black text-white flex items-center gap-1.5 bg-black/40 px-3 py-1 rounded-full backdrop-blur-md border border-white/20 shadow-xl">
               <svg viewBox="0 0 24 24" fill="#FF5A00" className="w-4 h-4 drop-shadow-[0_0_8px_rgba(255,90,0,0.8)]"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
               {rating.toFixed(1)}
             </span>
@@ -94,18 +94,18 @@ export default function HeroBanner({ items }: { items: any[] }) {
 
         <KineticReveal 
           text={title} 
-          className="text-5xl md:text-7xl lg:text-8xl font-black font-serif text-white drop-shadow-[0_0_40px_rgba(255,255,255,0.4)] leading-[1.1] max-w-4xl tracking-tight pointer-events-auto"
+          className="text-4xl sm:text-5xl md:text-6xl font-black font-sans text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)] leading-[1.1] max-w-4xl tracking-tight pointer-events-auto line-clamp-2"
         />
 
-        <p className="text-base md:text-lg text-gray-300/90 line-clamp-3 md:line-clamp-4 max-w-2xl leading-relaxed font-sans drop-shadow-lg mix-blend-screen pointer-events-auto">
+        <p className="text-sm md:text-base text-gray-100 line-clamp-3 max-w-2xl leading-relaxed font-sans drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] pointer-events-auto font-medium">
           {media.overview}
         </p>
 
         {/* Genres */}
         {media.genre_ids && media.genre_ids.length > 0 && (
-          <div className="flex flex-wrap gap-2 pointer-events-auto">
+          <div className="flex flex-wrap gap-2 pointer-events-auto mt-2">
             {media.genre_ids.slice(0, 4).map((gid: number) => (
-              <span key={gid} className="text-xs font-bold tracking-widest uppercase text-white/70 px-3 py-1 rounded-sm bg-white/5 border border-white/10 shadow-inner font-sans">
+              <span key={gid} className="text-xs font-bold tracking-widest uppercase text-white px-3 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/20 shadow-lg font-sans">
                 {GENRE_MAP[gid] || gid}
               </span>
             ))}
@@ -114,15 +114,15 @@ export default function HeroBanner({ items }: { items: any[] }) {
 
         <div className="flex gap-4 mt-6 flex-wrap relative pointer-events-auto">
           <MagneticWrapper>
-            <PrimaryButton onClick={() => window.location.href = href} className="gap-2 px-8 py-4 flex items-center shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:shadow-[0_0_30px_rgba(0,229,255,0.6)] font-sans group">
+            <PrimaryButton onClick={() => window.location.href = href} className="gap-2 px-8 py-4 flex items-center shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:shadow-[0_4px_30px_rgba(255,255,255,0.2)] bg-white/10 text-white backdrop-blur-md border border-white/30 rounded-full font-sans group transition-all">
               <AnimatedPlayIcon />
-              Watch Trailer
+              <span className="font-bold tracking-wider">Watch Trailer</span>
             </PrimaryButton>
           </MagneticWrapper>
           
           <MagneticWrapper>
-            <CodedInteractionButton onClick={() => window.location.href = href} className="font-sans font-medium text-sm gap-2 uppercase tracking-widest">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <CodedInteractionButton onClick={() => window.location.href = href} className="font-sans font-bold text-sm gap-2 uppercase tracking-widest text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] bg-black/40 backdrop-blur-md px-8 py-4 rounded-full border border-white/20 hover:bg-white/20 transition-all">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-5 h-5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               Explore
             </CodedInteractionButton>
           </MagneticWrapper>
@@ -136,7 +136,7 @@ export default function HeroBanner({ items }: { items: any[] }) {
             <button
               key={idx}
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActive(idx); }}
-              className={`h-1.5 rounded-full transition-all duration-500 cursor-pointer ${idx === active ? 'w-8 bg-primary shadow-[0_0_10px_rgba(0,229,255,0.8)]' : 'w-2 bg-white/30 hover:bg-white/60'}`}
+              className={`h-2 rounded-full transition-all duration-500 cursor-pointer ${idx === active ? 'w-10 bg-white shadow-[0_0_15px_rgba(255,255,255,0.8)]' : 'w-2 bg-white/40 hover:bg-white/80 border border-white/10'}`}
               aria-label={`Slide ${idx + 1}`}
             />
           ))}
@@ -148,7 +148,7 @@ export default function HeroBanner({ items }: { items: any[] }) {
         <>
           <button 
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); prev(); }} 
-            className="absolute left-6 top-1/2 -translate-y-1/2 z-[100] w-14 h-14 rounded-full glass flex items-center justify-center text-white hover:bg-white/10 hover:scale-110 !pointer-events-auto cursor-pointer transition-all shadow-[0_0_20px_rgba(0,0,0,0.5)] border-white/20"
+            className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 z-[100] w-14 h-14 rounded-full glass items-center justify-center text-white hover:bg-white/10 hover:scale-110 !pointer-events-auto cursor-pointer transition-all shadow-[0_0_20px_rgba(0,0,0,0.5)] border-white/20"
             aria-label="Previous slide"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6"><polyline points="15 18 9 12 15 6"/></svg>
@@ -156,7 +156,7 @@ export default function HeroBanner({ items }: { items: any[] }) {
           
           <button 
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); next(); }} 
-            className="absolute right-6 top-1/2 -translate-y-1/2 z-[100] w-14 h-14 rounded-full glass flex items-center justify-center text-white hover:bg-white/10 hover:scale-110 !pointer-events-auto cursor-pointer transition-all shadow-[0_0_20px_rgba(0,0,0,0.5)] border-white/20"
+            className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 z-[100] w-14 h-14 rounded-full glass items-center justify-center text-white hover:bg-white/10 hover:scale-110 !pointer-events-auto cursor-pointer transition-all shadow-[0_0_20px_rgba(0,0,0,0.5)] border-white/20"
             aria-label="Next slide"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6"><polyline points="9 18 15 12 9 6"/></svg>
@@ -166,7 +166,9 @@ export default function HeroBanner({ items }: { items: any[] }) {
 
       {/* Progress bar on current slide */}
       {!paused && items.length > 1 && (
-        <div className="absolute bottom-0 left-0 h-1 bg-primary z-30 animate-progress-bar shadow-[0_0_20px_rgba(0,229,255,0.8)]" />
+        <div className="absolute bottom-0 left-0 w-full h-[2px] z-30 bg-white/10">
+          <div key={active} className="h-full animate-progress-bar bg-gradient-to-r from-transparent via-white/80 to-white shadow-[0_0_15px_rgba(255,255,255,0.8)]" />
+        </div>
       )}
     </div>
   )

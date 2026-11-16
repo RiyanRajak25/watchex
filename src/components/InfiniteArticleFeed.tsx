@@ -12,7 +12,7 @@ interface ArticleData {
 }
 
 interface InfiniteArticleFeedProps {
-  movieId: string;
+  movieId: string | number;
   mediaType: string;
   initialSlug: string;
   movieTitle: string;
@@ -109,7 +109,7 @@ export function InfiniteArticleFeed({ movieId, mediaType, initialSlug, movieTitl
             <div className="inline-block px-3 py-1 bg-accent/20 border border-accent/20 rounded-full text-accent text-xs font-semibold uppercase tracking-wider mb-4 animate-pulse">
               Up Next: {article.article_slug.replace(/-/g, ' ')}
             </div>
-            <h2 className="text-4xl md:text-5xl font-heading font-bold text-white mb-6 leading-tight">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold text-white mb-6 leading-tight">
               {article.title}
             </h2>
           </header>

@@ -38,11 +38,17 @@ async function getSimilarMovies(movieId: string) {
   return shuffled.slice(0, 10);
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const movieId = parseInt(params.slug, 10);
-  if (isNaN(movieId)) return {};
+function parseMovieId(slug: string): number | null {
+  const match = slug.match(/(\d+)$/);
+  const id = match ? parseInt(match[1], 10) : parseInt(slug, 10);
+  return isNaN(id) ? null : id;
+}
 
-  const media = await getDetails('movie', params.slug);
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const movieId = parseMovieId(params.slug);
+  if (!movieId) return {};
+
+  const media = await getDetails('movie', movieId.toString());
   if (!media || !media.title) return {};
 
   const currentYear = new Date().getFullYear();
@@ -63,15 +69,15 @@ export async function generateStaticParams() {
 }
 
 export default async function MoviesLikePage({ params }: PageProps) {
-  const movieId = parseInt(params.slug, 10);
-  if (isNaN(movieId)) notFound();
+  const movieId = parseMovieId(params.slug);
+  if (!movieId) notFound();
 
   // 1. Fetch Primary Movie Architecture
-  const media = await getDetails('movie', params.slug);
+  const media = await getDetails('movie', movieId.toString());
   if (!media || !media.title) notFound();
 
   // 2. Fetch Relational "Similar" Movies dynamically
-  const similarMoviesRaw = await getSimilarMovies(params.slug);
+  const similarMoviesRaw = await getSimilarMovies(movieId.toString());
   
   // Map to VelocityGrid component Props structure 
   // (Assuming global GSAP Flip click handling triggers off the wrapped layout id/href)

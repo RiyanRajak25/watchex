@@ -87,10 +87,10 @@ export function VelocityGrid({ items }: VelocityGridProps) {
   }, [lenis]);
 
   return (
-    <div className="w-full relative py-32 overflow-hidden pointer-events-auto">
+    <div className="w-full relative py-16 md:py-32 overflow-hidden pointer-events-auto">
       <div 
         ref={gridWrapperRef} 
-        className="w-full max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 md:gap-12 will-change-transform"
+        className="w-full max-w-7xl mx-auto px-4 md:px-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-8 md:gap-12 will-change-transform"
       >
         {items.map((item, index) => (
           <div 
@@ -120,7 +120,7 @@ export function VelocityGrid({ items }: VelocityGridProps) {
               </div>
             )}
             {item.title && (
-              <h3 className="text-white text-lg font-bold text-center tracking-wide line-clamp-1">
+              <h3 className="text-white text-sm md:text-lg font-bold text-center tracking-wide line-clamp-2 md:line-clamp-1">
                 {item.title}
               </h3>
             )}
